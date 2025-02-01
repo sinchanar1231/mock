@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_USER = 'sinchana1231'
-        DOCKER_HUB_REPO = 'mock1'
+        DOCKER_HUB_USER = 'maheshgowdamg25'
+        DOCKER_HUB_REPO = 'docker'
         IMAGE_NAME = 'nginx'
         CONTAINER_NAME = 'app'
-        DOCKER_HUB_PASS = 'Mydocker@12'  
+        DOCKER_HUB_PASS = 'Mahi@2001'  
     }
 
     stages {
@@ -34,7 +34,7 @@ pipeline {
         }
 
         stage('Remove Existing Container (if any)') {
-            steps {
+            steps { 
                 script {
                     def containerExists = sh(script: "docker ps -a --filter 'name=${CONTAINER_NAME}' --format '{{.ID}}'", returnStdout: true).trim()
                     if (containerExists) {
@@ -72,17 +72,21 @@ pipeline {
     post {
         always {
             script {
-                // Stop and remove container if running
+                // Delete the image after the pipeline ends
+                def imageExists = sh(script: "docker images -q nginx", returnStdout: true).trim()
+                if (imageExists) {
+                    sh "docker rmi -f nginx"
+                }
+            }
+        }
+
+        success {
+            script {
+                // Remove the container after a successful pipeline
                 def containerExists = sh(script: "docker ps -q -f name=${CONTAINER_NAME}", returnStdout: true).trim()
                 if (containerExists) {
                     sh "docker stop ${CONTAINER_NAME}"
                     sh "docker rm ${CONTAINER_NAME}"
-                }
-
-                // Remove image if exists
-                def imageExists = sh(script: "docker images -q nginx", returnStdout: true).trim()
-                if (imageExists) {
-                    sh "docker rmi -f nginx"
                 }
             }
         }
